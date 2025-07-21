@@ -1,0 +1,4 @@
+runpod==1.7.13
+torch
+Pillow
+transformers>=4.45.0
