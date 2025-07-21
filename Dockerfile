@@ -1,17 +1,11 @@
-FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
+FROM runpod/pytorch:2.0.1-py3.10-cuda11.8.0-devel-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-      git libglib2.0-0 libgl1-mesa-glx python3-pip ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /app
-
 COPY requirements.txt ./
-RUN pip3 install --upgrade pip && \
-    pip3 install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip \
+ && pip install --no-cache-dir -r requirements.txt
 
 COPY . ./
 
