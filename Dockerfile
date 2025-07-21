@@ -1,4 +1,4 @@
-FROM runpod/pytorch:0.7.0-cu1263-torch260-ubuntu2404
+FROM runpod/pytorch:0.7.0-cu1263-torch271-ubuntu2404
 
 ENV DEBIAN_FRONTEND=noninteractive
 
