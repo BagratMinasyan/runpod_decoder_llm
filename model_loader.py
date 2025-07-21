@@ -1,9 +1,7 @@
-import os
+from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
+import os
 
-# Your static model
-MODEL_NAME = "meta-llama/Llama-3.2-3B-Instruct"
 hf_token = os.getenv("RUNPOD_SECRET_hf_key")
 
 def resolve_dtype(dtype_str: str):
@@ -15,21 +13,25 @@ def resolve_dtype(dtype_str: str):
     }
     return mapping.get(dtype_str.lower(), torch.float16)
 
-def load_model(torch_dtype_str: str = "float16"):
+def load_model(model_name: str, torch_dtype_str: str = "float16"):
     dtype = resolve_dtype(torch_dtype_str)
 
-    # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(
-        MODEL_NAME,
-        token=hf_token
-    )
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_name,
+            token=hf_token
+        )
+    except Exception as e:
+        raise RuntimeError(f"Tokenizer load failed: {type(e).__name__} - {str(e)}")
 
-    # Load model
-    model = AutoModelForCausalLM.from_pretrained(
-        MODEL_NAME,
-        torch_dtype=dtype,
-        device_map="auto",
-        token=hf_token
-    ).eval()
+    try:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            torch_dtype=dtype,
+            device_map="auto",
+            token=hf_token
+        ).eval()
+    except Exception as e:
+        raise RuntimeError(f"Model load failed: {type(e).__name__} - {str(e)}")
 
     return model, tokenizer

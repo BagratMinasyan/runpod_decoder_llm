@@ -1,45 +1,42 @@
-import torch
 from transformers import GenerationConfig
 from model_loader import load_model
+import torch
 
-def run_inference(prompt, generation_params: dict = None, torch_dtype: str = "float16"):
-    # (Re)load model with the requested dtype
-    model, tokenizer = load_model(torch_dtype)
-    device = model.device
+def run_inference(prompt, model_name: str, generation_params: dict = None, torch_dtype: str = "float16"):
+    try:
+        model, tokenizer = load_model(model_name, torch_dtype)
+    except Exception as e:
+        return {"error": f"Failed to load model/tokenizer: {type(e).__name__} - {str(e)}"}
 
-    # Support single string or list of strings
-    if isinstance(prompt, str):
-        prompt = [prompt]
+    try:
+        device = model.device
+        if isinstance(prompt, str):
+            prompt = [prompt]
 
-    # Tokenize with padding/truncation
-    inputs = tokenizer(
-        prompt,
-        return_tensors="pt",
-        padding=True,
-        truncation=True
-    ).to(device)
+        inputs = tokenizer(prompt, return_tensors="pt", padding=True, truncation=True).to(device)
+    except Exception as e:
+        return {"error": f"Tokenization error: {type(e).__name__} - {str(e)}"}
 
-    # Build GenerationConfig:
-    #  - if no params given, generate deterministically
-    if not generation_params:
-        gen_cfg = GenerationConfig(do_sample=False)
-    else:
-        gen_cfg = GenerationConfig(**generation_params)
+    try:
+        if not generation_params:
+            generation_config = GenerationConfig(do_sample=False)
+        else:
+            generation_config = GenerationConfig(**generation_params)
+    except Exception as e:
+        return {"error": f"Invalid generation_config: {type(e).__name__} - {str(e)}"}
 
-    # Generate!
-    with torch.no_grad():
-        outputs = model.generate(
-            input_ids=inputs["input_ids"],
-            attention_mask=inputs["attention_mask"],
-            generation_config=gen_cfg,
-            return_dict_in_generate=True,
-            output_scores=False
-        )
+    try:
+        with torch.no_grad():
+            outputs = model.generate(
+                input_ids=inputs["input_ids"],
+                attention_mask=inputs["attention_mask"],
+                generation_config=generation_config,
+                return_dict_in_generate=True,
+                output_scores=False,
+            )
 
-    # Decode all sequences
-    decoded = [
-        tokenizer.decode(seq, skip_special_tokens=True)
-        for seq in outputs.sequences
-    ]
+        decoded = [tokenizer.decode(seq, skip_special_tokens=True) for seq in outputs.sequences]
+        return {"generated_texts": decoded}
 
-    return {"generated_texts": decoded}
+    except Exception as e:
+        return {"error": f"Generation error: {type(e).__name__} - {str(e)}"}
