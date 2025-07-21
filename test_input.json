@@ -1,0 +1,16 @@
+{
+  "input": {
+    "prompt": [
+      "Ինչու է խոտը կանաչ:",
+      "Որտեղ է գտնվում Արարատ լեռը:"
+    ],
+    "model_name": "Gen2B/HyGPT-10b",
+    "torch_dtype": "float16",
+    "generation_config": {
+      "temperature": 0.0001,
+      "max_new_tokens": 128,
+      "do_sample": true,
+      "repetition_penalty": 1.05
+    }
+  }
+}
