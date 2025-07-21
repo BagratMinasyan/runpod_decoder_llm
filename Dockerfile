@@ -1,17 +1,21 @@
-FROM python:3.10-slim
+FROM nvidia/cuda:12.9.1-cudnn8-runtime-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-      git libgl1-mesa-glx libglib2.0-0 \
+      git \
+      libglib2.0-0 \
+      libgl1-mesa-glx \
+      python3-pip \
+      ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY requirements.txt ./
-RUN pip install --upgrade pip \
- && pip install --no-cache-dir -r requirements.txt
+RUN pip3 install --upgrade pip \
+ && pip3 install --no-cache-dir -r requirements.txt
 
 COPY . ./
 

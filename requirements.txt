@@ -1,5 +1,4 @@
-runpod==1.7.7
-torch
-Pillow
-transformers>=4.45.0
+torch==2.2.0+cu129      --extra-index-url https://download.pytorch.org/whl/cu129  # update when cu129 wheel is released
+transformers
 accelerate
+runpod
