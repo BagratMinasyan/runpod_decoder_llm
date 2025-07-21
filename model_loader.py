@@ -16,16 +16,22 @@ def resolve_dtype(dtype_str: str):
 def load_model(model_name: str, torch_dtype_str: str = "float16"):
     dtype = resolve_dtype(torch_dtype_str)
 
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_name,
-        token=hf_token
-    )
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_name,
+            token=hf_token
+        )
+    except Exception as e:
+        raise RuntimeError(f"Tokenizer load failed: {type(e).__name__} - {str(e)}")
 
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        torch_dtype=dtype,
-        device_map="auto",
-        token=hf_token
-    ).eval()
+    try:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            torch_dtype=dtype,
+            device_map="auto",
+            token=hf_token
+        ).eval()
+    except Exception as e:
+        raise RuntimeError(f"Model load failed: {type(e).__name__} - {str(e)}")
 
     return model, tokenizer
