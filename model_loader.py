@@ -15,6 +15,7 @@ def resolve_dtype(dtype_str: str):
 
 def load_model(model_name: str, torch_dtype_str: str = "float16"):
     dtype = resolve_dtype(torch_dtype_str)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
     try:
         tokenizer = AutoTokenizer.from_pretrained(
@@ -28,9 +29,8 @@ def load_model(model_name: str, torch_dtype_str: str = "float16"):
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
             torch_dtype=dtype,
-            device_map="auto",
             token=hf_token
-        ).eval()
+        ).to(device).eval()
     except Exception as e:
         raise RuntimeError(f"Model load failed: {type(e).__name__} - {str(e)}")
 
