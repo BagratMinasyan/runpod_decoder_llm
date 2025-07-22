@@ -1,26 +1,34 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from huggingface_hub import login
 import torch
 import os
 
-hf_token = os.getenv("RUNPOD_SECRET_hf_key")
-print(f"🔑 HF Token available: {'Yes' if hf_token else 'No'}")
-print(f"hf token: {hf_token}")
+def authenticate_hf():
+    """Authenticate with Hugging Face using token from environment"""
+    hf_token = os.getenv("RUNPOD_SECRET_hf_key")
+    if not hf_token:
+        raise ValueError("HF token not found in environment variable RUNPOD_SECRET_hf_key")
+    
+    try:
+        login(token=hf_token)
+        print("✅ Successfully logged into Hugging Face")
+    except Exception as e:
+        raise RuntimeError(f"HF authentication failed: {type(e).__name__} - {str(e)}")
 
 def resolve_dtype(dtype_str: str):
-    print(f"🔢 Resolving dtype: {dtype_str}")
     mapping = {
         "float16": torch.float16,
         "bfloat16": torch.bfloat16,
         "float32": torch.float32,
         "auto": "auto"
     }
-    resolved = mapping.get(dtype_str.lower(), torch.float16)
-    print(f"🔢 Resolved to: {resolved}")
-    return resolved
+    return mapping.get(dtype_str.lower(), torch.float16)
 
 def load_model(model_name: str, torch_dtype_str: str = "float16"):
     print(f"🚀 Starting model loading: {model_name}")
-    print(f"🔢 Requested dtype: {torch_dtype_str}")
+    
+    # Authenticate first
+    authenticate_hf()
     
     dtype = resolve_dtype(torch_dtype_str)
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -34,10 +42,7 @@ def load_model(model_name: str, torch_dtype_str: str = "float16"):
 
     try:
         print("🔤 Loading tokenizer...")
-        tokenizer = AutoTokenizer.from_pretrained(
-            model_name,
-            token=hf_token
-        )
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
         print("✅ Tokenizer loaded successfully")
         print(f"📊 Vocab size: {tokenizer.vocab_size}")
         print(f"🔚 EOS token: {tokenizer.eos_token}")
@@ -55,8 +60,7 @@ def load_model(model_name: str, torch_dtype_str: str = "float16"):
         
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
-            torch_dtype=dtype,
-            token=hf_token
+            torch_dtype=dtype
         )
         print("✅ Model loaded from pretrained")
         
