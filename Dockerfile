@@ -1,29 +1,22 @@
-FROM runpod/pytorch:0.7.0-cu1263-torch271-ubuntu2404
+FROM python:3.10-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-      git \
-      libgl1 \
-      libglx-mesa0 \
-      python3-pip \
-      ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
+# Install system packages
+RUN apt-get update && apt-get install -y \
+    git \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
+# Install Python requirements
 COPY requirements.txt ./
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Debug pip version and print exact installation output
-RUN python3 --version && \
-    pip --version && \
-    echo "📦 Installing requirements..." && \
-    pip install --no-cache-dir --verbose -r requirements.txt || (echo "❌ Pip install failed!" && cat requirements.txt && exit 1)
-
+# Copy project files
 COPY . .
 
-# Optionally confirm what's installed
-RUN pip list > installed_packages.txt && cat installed_packages.txt
-
+# Launch RunPod handler
 CMD ["python3", "-u", "rp_handler.py"]
