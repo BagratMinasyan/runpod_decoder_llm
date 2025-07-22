@@ -1,6 +1,4 @@
-torch
-accelerate
 runpod==1.7.7
 torch
 transformers>=4.45.0
-Pillow
+accelerate
