@@ -14,9 +14,16 @@ RUN apt-get update && \
 WORKDIR /app
 
 COPY requirements.txt ./
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
 
-COPY . ./
+# Debug pip version and print exact installation output
+RUN python3 --version && \
+    pip --version && \
+    echo "📦 Installing requirements..." && \
+    pip install --no-cache-dir --verbose -r requirements.txt || (echo "❌ Pip install failed!" && cat requirements.txt && exit 1)
+
+COPY . .
+
+# Optionally confirm what's installed
+RUN pip list > installed_packages.txt && cat installed_packages.txt
 
 CMD ["python3", "-u", "rp_handler.py"]
