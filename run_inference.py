@@ -1,6 +1,7 @@
 from transformers import GenerationConfig
 from model_loader import load_model
 import torch
+import json
 
 def run_inference(prompt, model_name: str, generation_params: dict = None, torch_dtype: str = "float16"):
     print("🔍 Starting run_inference...")
@@ -83,15 +84,27 @@ def run_inference(prompt, model_name: str, generation_params: dict = None, torch
         print("🔤 Decoding outputs...")
         decoded = [tokenizer.decode(seq, skip_special_tokens=True) for seq in outputs.sequences]
         print(f"✅ Decoded {len(decoded)} sequences")
+
+        for i in decoded:
+            print(f"🔤 Decoded output: {i[:100]}{'...' if len(i) > 100 else 'empty'}")
         
         result = {
             "results": [
                 {"prompt": p, "output": o} for p, o in zip(prompt, decoded)
             ]
         }
-        
+
         print("🎉 Inference completed successfully")
         print(f"📊 Results count: {len(result['results'])}")
+
+        try:
+            json.dumps(result)
+            print("✅ Result is JSON serializable")
+        except TypeError as e:
+            print(f"💥 Result not serializable: {e}")
+            return {"error": f"Non-serializable result: {str(e)}"}
+
+        print("📤 Returning result to handler...")
         
         return result
 
