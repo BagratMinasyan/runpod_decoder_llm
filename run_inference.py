@@ -24,6 +24,11 @@ def run_inference(prompt, model_name: str, generation_params: dict = None, torch
             print(f"🔧 Set EOS token fallback: {tokenizer.eos_token_id}")
         print(f"✅ EOS token ID: {tokenizer.eos_token_id}")
 
+        if tokenizer.pad_token is None:
+            print("🔧 pad_token is not set. Falling back to eos_token.")
+            tokenizer.pad_token = tokenizer.eos_token or tokenizer.eos_token_id
+            print(f"✅ pad_token set to: {tokenizer.pad_token}")
+
     except Exception as e:
         print(f"💥 Model loading failed: {type(e).__name__} - {str(e)}")
         return {"error": f"Failed to load model/tokenizer: {type(e).__name__} - {str(e)}"}

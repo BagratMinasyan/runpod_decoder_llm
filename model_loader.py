@@ -4,6 +4,7 @@ import os
 
 hf_token = os.getenv("RUNPOD_SECRET_hf_key")
 print(f"🔑 HF Token available: {'Yes' if hf_token else 'No'}")
+print(f"hf token: {hf_token}")
 
 def resolve_dtype(dtype_str: str):
     print(f"🔢 Resolving dtype: {dtype_str}")
